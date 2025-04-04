@@ -1,5 +1,6 @@
 import { DataTypes, Sequelize, Model, Optional } from 'sequelize';
 import bcrypt from 'bcrypt';
+import { Recipe } from './recipe.js';
 
 // Define the attributes for the User model
 interface UserAttributes {
@@ -7,6 +8,7 @@ interface UserAttributes {
   username: string;
   email: string;
   password: string;
+  Recipes?: Recipe[]; // include the associated recipes
 }
 
 // Define the optional attributes for creating a new User

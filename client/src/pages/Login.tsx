@@ -44,6 +44,7 @@ const Login = () => {
             className="form-input"
             type='text'
             name='username'
+            placeholder='Enter your username'
             value={loginData.username || ''}
             onChange={handleChange}
           />
@@ -55,6 +56,8 @@ const Login = () => {
             className="form-input"
             type='password'
             name='password'
+            title='Password'
+            placeholder='Enter your password'
             value={loginData.password || ''}
             onChange={handleChange}
           />
