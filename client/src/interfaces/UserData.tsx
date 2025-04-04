@@ -1,5 +1,5 @@
-export interface UserData {
+export interface Mealinfo {
   id: number | null;
-  username: string | null;
-  email: string | null;
+  ingredients: string | null;
+  calories: number | null;
 }
