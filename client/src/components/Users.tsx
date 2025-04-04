@@ -1,26 +1,23 @@
 import React from 'react';
 
-import type { UserData } from "../interfaces/UserData";
+import type { Mealinfo } from "../interfaces/UserData";
 // import auth from '../utils/AuthService';
 
 // Define the props for the component
-interface UserListProps {
-    users: UserData[] | null; // users can be an array of UserData objects or null
+interface MealinfoProps {
+    meals: Mealinfo[] | null; // users can be an array of UserData objects or null
 }
 
-const UserList: React.FC<UserListProps> = ({ users }) => {
+const UserList: React.FC<MealinfoProps> = ({ meals }) => {
     return (
         <>
             <h2 className="pb-5">
-                Check out all your friends!
+                Check out all your Recipies!
             </h2>
-            {users && users.map((user) => (
-                <div className="row align-center mb-5" key={user.id}>
+            {meals && meals.map((meals) => (
+                <div className="row align-center mb-5" key={meals.id}>
                     <div className="col-md-6">
-                        <h3>{user.id}. {user.username}</h3>
-                    </div>
-                    <div className="col-md-6">
-                        <h4><a href={`mailto:${user.email}`}>{user.email}</a></h4>
+                        <h3>{meals.id}. {meals.calories}</h3>
                     </div>
                 </div>
             ))}
