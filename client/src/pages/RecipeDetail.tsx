@@ -1,4 +1,3 @@
-// client/src/pages/RecipeDetail.tsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getRecipeById, getNutritionInfo, saveRecipe } from "../api/recipeAPI";

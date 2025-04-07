@@ -1,29 +1,23 @@
 class AuthService {
-  
-  // Check if the user is logged in by retrieving the token from localStorage
-  loggedIn() {
-    const token = this.getToken();
-    return token;
-  }
-
-  // Retrieve the JWT token from localStorage
   getToken(): string {
-    const loggedUser = localStorage.getItem('id_token') || '';
-    return loggedUser;
+    return localStorage.getItem('id_token') || '';
   }
 
-  // Store the JWT token in localStorage and redirect to the home page
-  login(idToken: string) {
+  loggedIn(): boolean {
+    const token = this.getToken();
+    // simple check for token existence - could be enhanced with JWT validation
+    return token.length > 0;
+  }
+
+  login(idToken: string): void {
     localStorage.setItem('id_token', idToken);
-    window.location.assign('/');
+    window.location.assign('/recipes');
   }
 
-  // Remove the JWT token from localStorage and redirect to the home page
-  logout() {
+  logout(): void {
     localStorage.removeItem('id_token');
     window.location.assign('/');
   }
 }
 
-// Export an instance of the AuthService class
 export default new AuthService();

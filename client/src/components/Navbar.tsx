@@ -1,13 +1,12 @@
-// client/src/components/Navbar.tsx
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import auth from '../utils/auth';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import auth from "../utils/auth";
 
 const Navbar = () => {
-  // State to track the login status
+  // state to track the login status
   const [loginCheck, setLoginCheck] = useState(false);
 
-  // Function to check if the user is logged in
+  // function to check if the user is logged in
   const checkLogin = () => {
     if (auth.loggedIn()) {
       setLoginCheck(true);
@@ -22,27 +21,38 @@ const Navbar = () => {
   return (
     <nav className="display-flex justify-space-between align-center py-2 px-5 mint-green">
       <div>
-        <h1>
-          <Link to="/">Foodfolio</Link>
-        </h1>
+        <Link to="/">
+          <img
+            src="/assets/images/foodfolio-logo.png"
+            alt="Foodfolio Logo"
+            className="navbar-logo"
+          />
+        </Link>
       </div>
 
       <div>
         {loginCheck && (
           <>
-            <Link to="/recipes" className="btn mr-2">Browse Recipes</Link>
-            {/* Add more navigation links as needed */}
+            <Link to="/recipes" className="btn mr-2">
+              Browse Recipes
+            </Link>
           </>
         )}
 
         {!loginCheck ? (
-          <button className="btn" type='button'>
-            <Link to='/login'>Login</Link>
+          <button className="btn" type="button">
+            <Link to="/login">Login</Link>
           </button>
         ) : (
-          <button className="btn" type='button' onClick={() => {
-            auth.logout();
-          }}>Logout</button>
+          <button
+            className="btn"
+            type="button"
+            onClick={() => {
+              auth.logout();
+            }}
+          >
+            Logout
+          </button>
         )}
       </div>
     </nav>
