@@ -1,22 +1,22 @@
 import { useState, FormEvent, ChangeEvent, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Auth from "../utils/auth";
+import Auth from '../utils/auth';
 import { login } from "../api/authAPI";
 import { UserLogin } from "../interfaces/UserLogin";
 
 const Login = () => {
   const navigate = useNavigate();
   const [loginData, setLoginData] = useState<UserLogin>({
-    username: "",
-    password: "",
+    username: '',
+    password: ''
   });
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   // check if already logged in
   useEffect(() => {
     if (Auth.loggedIn()) {
-      navigate("/recipes");
+      navigate('/recipes');
     }
   }, [navigate]);
 
@@ -24,7 +24,7 @@ const Login = () => {
     const { name, value } = e.target;
     setLoginData({
       ...loginData,
-      [name]: value,
+      [name]: value
     });
   };
 
@@ -60,49 +60,51 @@ const Login = () => {
   };
 
   return (
-    <div className="form-container">
-      <form className="form login-form" onSubmit={handleSubmit}>
+    <div className='form-container'>
+      <form className='form login-form' onSubmit={handleSubmit}>
         <h1>Login</h1>
         {error && <div className="alert alert-danger">{error}</div>}
-
+        
         <div className="form-group">
           <label htmlFor="username">Username</label>
-          <input
+          <input 
             id="username"
             className="form-input"
-            type="text"
-            name="username"
-            placeholder="Enter your username"
-            value={loginData.username || ""}
+            type='text'
+            name='username'
+            placeholder='Enter your username'
+            value={loginData.username || ''}
             onChange={handleChange}
             required
           />
         </div>
-
+        
         <div className="form-group">
           <label htmlFor="password">Password</label>
-          <input
+          <input 
             id="password"
             className="form-input"
-            type="password"
-            name="password"
-            placeholder="Enter your password"
-            value={loginData.password || ""}
+            type='password'
+            name='password'
+            placeholder='Enter your password'
+            value={loginData.password || ''}
             onChange={handleChange}
             required
           />
         </div>
-
+        
         <div className="form-group">
-          <button className="btn btn-primary" type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+          <button 
+            className="btn btn-primary" 
+            type='submit'
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </div>
-
+        
         <div className="mt-3">
-          <p>
-            Don't have an account? <a href="/signup">Sign up</a>
-          </p>
+          <p>Don't have an account? <a href="/signup">Sign up</a></p>
         </div>
       </form>
     </div>

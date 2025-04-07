@@ -1,11 +1,11 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent } from "react";
 
 interface SearchFormProps {
   onSearch: (query: string) => void;
 }
 
 const SearchForm = ({ onSearch }: SearchFormProps) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -15,7 +15,7 @@ const SearchForm = ({ onSearch }: SearchFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4">
+    <form onSubmit={handleSubmit} className="search-form mb-4">
       <div className="input-group">
         <input
           type="text"
@@ -23,8 +23,10 @@ const SearchForm = ({ onSearch }: SearchFormProps) => {
           placeholder="Search for recipes..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Search recipes"
         />
-        <button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-primary px-4">
+          <i className="bi bi-search me-2"></i>
           Search
         </button>
       </div>

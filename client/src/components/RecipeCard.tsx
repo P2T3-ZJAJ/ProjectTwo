@@ -7,24 +7,26 @@ interface RecipeCardProps {
 
 const RecipeCard = ({ recipe }: RecipeCardProps) => {
   return (
-    <div className="card h-100 shadow-sm hover-shadow">
-      <img
-        src={recipe.strMealThumb}
-        className="card-img-top recipe-card-image"
-        alt={recipe.strMeal}
-      />
-      <div className="card-body d-flex flex-column">
-        <h5 className="card-title text-truncate">{recipe.strMeal}</h5>
-        <div className="mb-2">
-          <span className="badge bg-primary me-2">{recipe.strCategory}</span>
-          <span className="badge bg-secondary">{recipe.strArea}</span>
+    <div className="card h-100 border-0">
+      <div className="card-img-container">
+        <img
+          src={recipe.strMealThumb}
+          className="card-img-top"
+          alt={recipe.strMeal}
+        />
+        <div className="card-badges">
+          <span className="badge bg-primary">{recipe.strCategory}</span>
+          <span className="badge bg-secondary ms-2">{recipe.strArea}</span>
         </div>
-        <p className="card-text small text-muted">
-          {recipe.strInstructions?.substring(0, 80)}...
+      </div>
+      <div className="card-body d-flex flex-column p-4">
+        <h5 className="card-title fw-bold mb-3">{recipe.strMeal}</h5>
+        <p className="card-text text-muted mb-4">
+          {recipe.strInstructions?.substring(0, 100)}...
         </p>
         <Link
           to={`/recipe/${recipe.idMeal}`}
-          className="btn btn-primary mt-auto"
+          className="btn btn-outline mt-auto"
         >
           View Recipe
         </Link>
