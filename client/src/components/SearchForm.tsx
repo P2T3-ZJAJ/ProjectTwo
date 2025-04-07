@@ -15,22 +15,24 @@ const SearchForm = ({ onSearch }: SearchFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="search-form mb-4">
-      <div className="input-group">
-        <input
-          type="text"
-          className="form-input"
-          placeholder="Search for recipes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          aria-label="Search recipes"
-        />
-        <button type="submit" className="btn btn-primary px-4">
-          <i className="bi bi-search me-2"></i>
-          Search
-        </button>
-      </div>
-    </form>
+    <div className="search-container">
+      <h1 className="search-title">Find Your Next Meal! 🍽️</h1>
+      <form onSubmit={handleSubmit} className="search-form">
+        <div className="search-wrapper">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search recipes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            aria-label="Search recipes"
+          />
+          <button type="submit" className="search-button">
+            <i className="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

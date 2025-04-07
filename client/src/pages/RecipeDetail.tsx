@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { getRecipeById, getNutritionInfo, saveRecipe } from "../api/recipeAPI";
 import { Recipe } from "../interfaces/Recipe";
 import { NutritionItem } from "../interfaces/Nutrition";
@@ -17,29 +17,47 @@ const RecipeDetail = () => {
 
   useEffect(() => {
     const loadRecipeDetails = async () => {
+      // reset states on ID change
+      setLoading(true);
+      setError("");
+      setRecipe(null);
+      setNutritionInfo([]);
+
       try {
         if (!auth.loggedIn()) {
           navigate("/login");
           return;
         }
+        if (!id) {
+          setError("Recipe ID is missing.");
+          setLoading(false);
+          return;
+        }
 
-        if (!id) return;
-
-        setLoading(true);
         const recipeData = await getRecipeById(id);
+        if (!recipeData) {
+          setError("Recipe not found.");
+          setLoading(false);
+          return;
+        }
         setRecipe(recipeData);
 
         // get ingredients list for nutrition API
-        if (recipeData) {
-          const ingredients = getIngredientsList(recipeData);
-          const nutritionData = await getNutritionInfo(ingredients);
-          setNutritionInfo(nutritionData);
+        const ingredients = getIngredientsList(recipeData);
+        if (ingredients) {
+          // only fetch nutrition if ingredients exist
+          try {
+            const nutritionData = await getNutritionInfo(ingredients);
+            setNutritionInfo(nutritionData);
+          } catch (nutriErr) {
+            console.warn("Failed to load nutrition info:", nutriErr);
+            // don't block the page load for nutrition errors, maybe show a message later
+          }
         }
-
-        setLoading(false);
       } catch (err) {
         console.error("Failed to load recipe details:", err);
         setError("Failed to load recipe details. Please try again.");
+      } finally {
         setLoading(false);
       }
     };
@@ -47,18 +65,19 @@ const RecipeDetail = () => {
     loadRecipeDetails();
   }, [id, navigate]);
 
-  // helper function to extract ingredients list
   const getIngredientsList = (recipe: Recipe): string => {
     let ingredients = "";
     for (let i = 1; i <= 20; i++) {
       const ingredient = recipe[`strIngredient${i}` as keyof Recipe];
       const measure = recipe[`strMeasure${i}` as keyof Recipe];
-
       if (ingredient && String(ingredient).trim() !== "") {
-        ingredients += `${measure} ${ingredient}, `;
+        // combine measure and ingredient, handling cases where measure might be empty/null
+        ingredients += `${measure ? String(measure).trim() + " " : ""}${String(
+          ingredient
+        ).trim()}, `;
       }
     }
-    return ingredients.slice(0, -2); // remove trailing comma and space
+    return ingredients.trim().replace(/,$/, ""); // emove trailing comma and space if exists
   };
 
   // save recipe to favorites
@@ -67,7 +86,7 @@ const RecipeDetail = () => {
       if (!recipe) return;
 
       setSavingFavorite(true);
-      // Note: need to get the actual user ID from auth or context
+      // need to get the actual user ID from auth or context
       const userId = 1; // Placeholder - replace with actual user ID
       const result = await saveRecipe(userId, recipe.idMeal, recipe);
 
@@ -84,107 +103,185 @@ const RecipeDetail = () => {
     }
   };
 
-  if (loading) return <p>Loading recipe details...</p>;
-  if (error) return <p className="text-danger">{error}</p>;
-  if (!recipe) return <p>Recipe not found.</p>;
+  // loading and error states
+  if (loading) {
+    return (
+      <div className="container text-center my-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-2">Loading Recipe...</p>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="container my-4">
+        <div className="alert alert-danger" role="alert">
+          {error} -{" "}
+          <Link to="/recipes" className="alert-link">
+            Back to Recipes
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  if (!recipe) {
+    return (
+      <div className="container my-4">
+        <div className="alert alert-warning" role="alert">
+          Recipe not found.{" "}
+          <Link to="/recipes" className="alert-link">
+            Back to Recipes
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container my-4">
-      <div className="row">
-        <div className="col-md-6">
-          <img
-            src={recipe.strMealThumb}
-            alt={recipe.strMeal}
-            className="img-fluid rounded mb-3"
-          />
-
-          <h1>{recipe.strMeal}</h1>
-
-          <div className="mb-3">
-            <span className="badge bg-primary me-2">{recipe.strCategory}</span>
-            <span className="badge bg-secondary">{recipe.strArea}</span>
-          </div>
-
-          <button
-            className="btn btn-success mb-4"
-            onClick={handleSaveRecipe}
-            disabled={savingFavorite}
-          >
-            {savingFavorite ? "Saving..." : "Save to Favorites"}
-          </button>
-
-          {saveMessage && <p className="text-success">{saveMessage}</p>}
-
-          {recipe.strYoutube && (
-            <div className="mb-4">
-              <h3>Video Tutorial</h3>
+    <div className="container recipe-detail-page my-4 my-lg-5">
+      {" "}
+      {/* Added lg margin */}
+      <div className="row mb-4 align-items-center recipe-detail-header">
+        <div className="col-lg-6">
+          <h1 className="recipe-title mb-2">{recipe.strMeal}</h1>
+          {(recipe.strCategory || recipe.strArea) && (
+            <div className="recipe-card-meta mb-3">
+              {recipe.strCategory && (
+                <span className="recipe-category me-2">
+                  {recipe.strCategory}
+                </span>
+              )}
+              {recipe.strArea && (
+                <span className="recipe-area">{recipe.strArea}</span>
+              )}
+            </div>
+          )}
+          <div className="recipe-actions mb-3">
+            <button
+              className="btn btn-save-favorite me-2"
+              onClick={handleSaveRecipe}
+              disabled={savingFavorite}
+            >
+              {savingFavorite ? "Saving..." : "Save Recipe"}
+            </button>
+            {recipe.strYoutube && (
               <a
                 href={recipe.strYoutube}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-danger"
+                className="btn btn-youtube"
               >
-                Watch on YouTube
+                Watch Tutorial
               </a>
-            </div>
+            )}
+          </div>
+          {saveMessage && (
+            <p className="text-success small mb-0">{saveMessage}</p>
           )}
         </div>
-
-        <div className="col-md-6">
-          <h3>Ingredients</h3>
-          <ul className="list-group mb-4">
-            {Array.from({ length: 20 }).map((_, i) => {
-              const ingredient =
-                recipe[`strIngredient${i + 1}` as keyof Recipe];
-              const measure = recipe[`strMeasure${i + 1}` as keyof Recipe];
-
-              if (ingredient && String(ingredient).trim() !== "") {
-                return (
-                  <li key={i} className="list-group-item">
-                    {measure} {ingredient}
-                  </li>
-                );
-              }
-              return null;
-            })}
-          </ul>
-
-          <h3>Instructions</h3>
-          <p>{recipe.strInstructions}</p>
+        <div className="col-lg-6 mt-3 mt-lg-0">
+          <div className="recipe-image-container">
+            <img
+              src={recipe.strMealThumb}
+              alt={recipe.strMeal}
+              className="img-fluid recipe-detail-image"
+            />
+          </div>
         </div>
       </div>
+      <div className="row g-lg-5">
+        <div className="col-lg-5 mb-4 mb-lg-0">
+          <div className="recipe-detail-section">
+            <h3 className="section-title mb-3">Ingredients</h3>
+            <ul className="recipe-ingredients-list list-unstyled">
+              {Array.from({ length: 20 }).map((_, i) => {
+                const ingredient =
+                  recipe[`strIngredient${i + 1}` as keyof Recipe];
+                const measure = recipe[`strMeasure${i + 1}` as keyof Recipe];
+                if (ingredient && String(ingredient).trim() !== "") {
+                  return (
+                    <li key={i} className="ingredient-item">
+                      <span className="measure">
+                        {measure ? String(measure).trim() : ""}
+                      </span>
+                      <span className="ingredient">
+                        {String(ingredient).trim()}
+                      </span>
+                    </li>
+                  );
+                }
+                return null;
+              })}
+            </ul>
+          </div>
+        </div>
 
+        <div className="col-lg-7">
+          <div className="recipe-detail-section">
+            <h3 className="section-title mb-3">Instructions</h3>
+            <div className="recipe-instructions">
+              {recipe.strInstructions
+                ?.split("\n")
+                .map(
+                  (line, index) =>
+                    line.trim() && <p key={index}>{line.trim()}</p>
+                )}
+            </div>
+          </div>
+        </div>
+      </div>
       {nutritionInfo.length > 0 && (
-        <div className="row mt-4">
+        <div className="row mt-4 mt-lg-5">
           <div className="col-12">
-            <h3>Nutrition Information</h3>
-            <div className="table-responsive">
-              <table className="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Calories</th>
-                    <th>Protein</th>
-                    <th>Carbs</th>
-                    <th>Fat</th>
-                    <th>Fiber</th>
-                    <th>Sugar</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {nutritionInfo.map((item, index) => (
-                    <tr key={index}>
-                      <td>{item.food_name}</td>
-                      <td>{item.nf_calories.toFixed(1)}</td>
-                      <td>{item.nf_protein.toFixed(1)}g</td>
-                      <td>{item.nf_total_carbohydrate.toFixed(1)}g</td>
-                      <td>{item.nf_total_fat.toFixed(1)}g</td>
-                      <td>{item.nf_dietary_fiber.toFixed(1)}g</td>
-                      <td>{item.nf_sugars.toFixed(1)}g</td>
+            <div className="recipe-detail-section">
+              <h3 className="section-title mb-3">Nutrition Information</h3>
+              <p className="text-muted small mb-3">
+                Approximate values per serving based on ingredients listed.
+              </p>
+              <div className="table-responsive">
+                <table className="table nutrition-table">
+                  <thead>
+                    <tr>
+                      <th>Nutrient</th>
+                      <th>Amount</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {nutritionInfo.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.food_name || "Total"}</td>
+                        <td>
+                          {item.nf_calories !== undefined
+                            ? `${item.nf_calories.toFixed(0)} kcal`
+                            : "-"}{" "}
+                          | P:{" "}
+                          {item.nf_protein !== undefined
+                            ? `${item.nf_protein.toFixed(1)}g`
+                            : "-"}{" "}
+                          | C:{" "}
+                          {item.nf_total_carbohydrate !== undefined
+                            ? `${item.nf_total_carbohydrate.toFixed(1)}g`
+                            : "-"}{" "}
+                          | F:{" "}
+                          {item.nf_total_fat !== undefined
+                            ? `${item.nf_total_fat.toFixed(1)}g`
+                            : "-"}{" "}
+                          | Fib:{" "}
+                          {item.nf_dietary_fiber !== undefined
+                            ? `${item.nf_dietary_fiber.toFixed(1)}g`
+                            : "-"}{" "}
+                          | Sug:{" "}
+                          {item.nf_sugars !== undefined
+                            ? `${item.nf_sugars.toFixed(1)}g`
+                            : "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
