@@ -14,7 +14,7 @@ const RecipeBrowse = () => {
 
   // load multiple random recipes on initial page load
   useEffect(() => {
-    const loadInitialRecipes = async (count: number = 8) => {
+    const loadInitialRecipes = async (count: number = 20) => {
       try {
         if (!auth.loggedIn()) {
           navigate("/login");
@@ -98,18 +98,18 @@ const RecipeBrowse = () => {
           {error}
         </div>
       )}
-      <div className="row g-4">
+      <div className="row gy-5">
         {!loading && !error && recipes.length > 0
           ? recipes.map((recipe) => (
               <div
-                className="col-xl-3 col-lg-4 col-md-6 col-sm-6"
+                className="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4"
                 key={recipe.idMeal}
               >
                 <RecipeCard recipe={recipe} />
               </div>
             ))
           : !loading &&
-            !error && ( // only show "No recipes" if not loading and no error occurred
+            !error && (
               <div className="col-12">
                 <p className="text-center text-muted mt-5">
                   No recipes found. Try searching for something delicious!

@@ -142,7 +142,6 @@ const RecipeDetail = () => {
   return (
     <div className="container recipe-detail-page my-4 my-lg-5">
       {" "}
-      {/* Added lg margin */}
       <div className="row mb-4 align-items-center recipe-detail-header">
         <div className="col-lg-6">
           <h1 className="recipe-title mb-2">{recipe.strMeal}</h1>

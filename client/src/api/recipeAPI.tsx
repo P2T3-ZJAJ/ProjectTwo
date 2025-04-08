@@ -13,11 +13,11 @@ export const getRandomRecipe = async () => {
         Authorization: `Bearer ${Auth.getToken()}`
       }
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch random recipe');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching random recipe:', error);
@@ -33,11 +33,11 @@ export const searchRecipes = async (name: string) => {
         Authorization: `Bearer ${Auth.getToken()}`
       }
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to search recipes');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error searching recipes:', error);
@@ -53,11 +53,11 @@ export const getRecipeById = async (id: string) => {
         Authorization: `Bearer ${Auth.getToken()}`
       }
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch recipe details');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching recipe details:', error);
@@ -76,11 +76,11 @@ export const getNutritionInfo = async (ingredients: string) => {
       },
       body: JSON.stringify({ ingredients })
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch nutrition information');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching nutrition info:', error);
@@ -99,11 +99,11 @@ export const saveRecipe = async (userId: number, mealId: string, mealData: Recip
       },
       body: JSON.stringify({ userId, mealId, mealData })
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to save recipe to favorites');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error saving recipe to favorites:', error);
@@ -119,11 +119,11 @@ export const getFavorites = async (userId: number) => {
         Authorization: `Bearer ${Auth.getToken()}`
       }
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch favorite recipes');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching favorite recipes:', error);
