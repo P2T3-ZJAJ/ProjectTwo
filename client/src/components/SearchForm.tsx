@@ -27,7 +27,7 @@ const SearchForm = ({ onSearch }: SearchFormProps) => {
             onChange={(e) => setSearchTerm(e.target.value)}
             aria-label="Search recipes"
           />
-          <button type="submit" className="search-button">
+          <button type="submit" className="search-button" title="Search">
             <i className="bi bi-search"></i>
           </button>
         </div>

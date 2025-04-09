@@ -125,7 +125,7 @@ body {
 }
 
 .card-img-top {
-  height: 220px;
+  height: 205px;
   object-fit: cover;
   transition: transform 0.5s ease;
 }
@@ -339,7 +339,7 @@ a.button:hover {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  /* text-overflow: ellipsis; */
 }
 
 .recipe-badges {
@@ -528,7 +528,7 @@ a.button:hover {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  /* text-overflow: ellipsis; */
   min-height: 2.6em;
 }
 
@@ -540,8 +540,14 @@ a.button:hover {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  /* text-overflow: ellipsis; */
   min-height: 3.8em;
+}
+
+.recipe-card:hover {
+  border-color: #2ecc71 !important;
+  box-shadow: 0 8px 16px rgba(46, 204, 113, 0.2) !important;
+  transform: translateY(-5px);
 }
 
 .btn-recipe-view {

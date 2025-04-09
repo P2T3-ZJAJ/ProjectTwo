@@ -15,6 +15,16 @@ const RecipeDetail = () => {
   const [saveMessage, setSaveMessage] = useState("");
   const [error, setError] = useState("");
 
+  // format title function
+  const formatTitle = (title: string | null | undefined): string => {
+    if (!title) return "";
+    const properCase = title.replace(
+      /\b\w+/g,
+      (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    );
+    return properCase.replace(/ and /gi, " & ").replace(/ with /gi, " w/ ");
+  };
+
   useEffect(() => {
     const loadRecipeDetails = async () => {
       // reset states on ID change
@@ -107,9 +117,6 @@ const RecipeDetail = () => {
   if (loading) {
     return (
       <div className="container text-center my-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
         <p className="mt-2">Loading Recipe...</p>
       </div>
     );
@@ -144,24 +151,55 @@ const RecipeDetail = () => {
       {" "}
       <div className="row mb-4 align-items-center recipe-detail-header">
         <div className="col-lg-6">
-          <h1 className="recipe-title mb-2">{recipe.strMeal}</h1>
+          <h1 className="recipe-title mb-2">{formatTitle(recipe.strMeal)}</h1>
           {(recipe.strCategory || recipe.strArea) && (
             <div className="recipe-card-meta mb-3">
               {recipe.strCategory && (
-                <span className="recipe-category me-2">
+                <span
+                  className="recipe-category me-2"
+                  style={{
+                    fontWeight: "500",
+                    color: "#2ecc71",
+                    fontSize: "1.1rem",
+                  }}
+                >
                   {recipe.strCategory}
                 </span>
               )}
+              {recipe.strCategory && recipe.strArea && (
+                <span style={{ margin: "0 8px", fontSize: "1.1rem" }}>•</span>
+              )}
               {recipe.strArea && (
-                <span className="recipe-area">{recipe.strArea}</span>
+                <span
+                  className="recipe-area"
+                  style={{
+                    fontWeight: "500",
+                    color: "#3498db",
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  {recipe.strArea}
+                </span>
               )}
             </div>
           )}
-          <div className="recipe-actions mb-3">
+          <div
+            className="recipe-actions mb-3"
+            style={{ display: "flex", gap: "12px" }}
+          >
             <button
-              className="btn btn-save-favorite me-2"
+              className="btn btn-save-favorite"
               onClick={handleSaveRecipe}
               disabled={savingFavorite}
+              style={{
+                minWidth: "120px",
+                padding: "8px 16px",
+                borderRadius: "4px",
+                fontWeight: "500",
+                textAlign: "center",
+                display: "inline-block",
+                cursor: "pointer",
+              }}
             >
               {savingFavorite ? "Saving..." : "Save Recipe"}
             </button>
@@ -171,10 +209,36 @@ const RecipeDetail = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-youtube"
+                style={{
+                  minWidth: "120px",
+                  padding: "8px 16px",
+                  borderRadius: "4px",
+                  fontWeight: "500",
+                  textDecoration: "none",
+                  display: "inline-block",
+                  textAlign: "center",
+                }}
               >
                 Watch Tutorial
               </a>
             )}
+          </div>
+          <div className="mt-3 mb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="btn btn-outline-secondary"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 16px",
+                borderRadius: "4px",
+                fontWeight: "500",
+                cursor: "pointer",
+              }}
+            >
+              <i className="bi bi-arrow-left"></i> Back to Recipes
+            </button>
           </div>
           {saveMessage && (
             <p className="text-success small mb-0">{saveMessage}</p>
@@ -192,7 +256,8 @@ const RecipeDetail = () => {
       </div>
       <div className="row g-lg-5">
         <div className="col-lg-5 mb-4 mb-lg-0">
-          <div className="recipe-detail-section">
+          <div className="recipe-detail-section h-100">
+            {" "}
             <h3 className="section-title mb-3">Ingredients</h3>
             <ul className="recipe-ingredients-list list-unstyled">
               {Array.from({ length: 20 }).map((_, i) => {
@@ -218,7 +283,7 @@ const RecipeDetail = () => {
         </div>
 
         <div className="col-lg-7">
-          <div className="recipe-detail-section">
+          <div className="recipe-detail-section h-100">
             <h3 className="section-title mb-3">Instructions</h3>
             <div className="recipe-instructions">
               {recipe.strInstructions
@@ -237,7 +302,7 @@ const RecipeDetail = () => {
             <div className="recipe-detail-section">
               <h3 className="section-title mb-3">Nutrition Information</h3>
               <p className="text-muted small mb-3">
-                Approximate values per serving based on ingredients listed.
+                Approximate values based on ingredients listed.
               </p>
               <div className="table-responsive">
                 <table className="table nutrition-table">
@@ -252,27 +317,27 @@ const RecipeDetail = () => {
                       <tr key={index}>
                         <td>{item.food_name || "Total"}</td>
                         <td>
-                          {item.nf_calories !== undefined
+                          {item.nf_calories != null
                             ? `${item.nf_calories.toFixed(0)} kcal`
                             : "-"}{" "}
                           | P:{" "}
-                          {item.nf_protein !== undefined
+                          {item.nf_protein != null
                             ? `${item.nf_protein.toFixed(1)}g`
                             : "-"}{" "}
                           | C:{" "}
-                          {item.nf_total_carbohydrate !== undefined
+                          {item.nf_total_carbohydrate != null
                             ? `${item.nf_total_carbohydrate.toFixed(1)}g`
                             : "-"}{" "}
                           | F:{" "}
-                          {item.nf_total_fat !== undefined
+                          {item.nf_total_fat != null
                             ? `${item.nf_total_fat.toFixed(1)}g`
                             : "-"}{" "}
                           | Fib:{" "}
-                          {item.nf_dietary_fiber !== undefined
+                          {item.nf_dietary_fiber != null
                             ? `${item.nf_dietary_fiber.toFixed(1)}g`
                             : "-"}{" "}
                           | Sug:{" "}
-                          {item.nf_sugars !== undefined
+                          {item.nf_sugars != null
                             ? `${item.nf_sugars.toFixed(1)}g`
                             : "-"}
                         </td>
