@@ -709,6 +709,7 @@ a.button:hover {
   line-height: 1.7;
   margin-bottom: 1rem;
   color: var(--text-color);
+  font-size: 1rem;
 }
 
 .recipe-instructions p:last-child {
@@ -718,44 +719,63 @@ a.button:hover {
 .nutrition-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
   font-size: 0.9rem;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .nutrition-table thead {
-  background-color: rgba(46, 204, 113, 0.1);
-  border-bottom: 2px solid var(--primary-color);
+  background-color: rgba(46, 204, 113, 0.15);
 }
 
 .nutrition-table th {
-  padding: 0.75rem 1rem;
-  text-align: left;
+  padding: 0.75rem;
+  text-align: center;
   font-weight: 600;
-  color: var(--primary-dark);
+  color: #2c3e50;
+  border-bottom: 2px solid var(--primary-color);
 }
 
 .nutrition-table tbody tr {
-  border-bottom: 1px solid #eee;
+  border-top: 1px solid #eee;
   transition: background-color 0.2s ease;
 }
 
-.nutrition-table tbody tr:last-child {
-  border-bottom: none;
-}
-
 .nutrition-table tbody tr:hover {
-  background-color: #f9f9f9;
+  background-color: rgba(46, 204, 113, 0.05);
 }
 
 .nutrition-table td {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
+  text-align: center;
   vertical-align: middle;
   color: var(--text-color);
 }
 
 .nutrition-table td:first-child {
+  text-align: left;
   font-weight: 500;
-  color: #555;
+  color: #444;
+}
+
+.nutrition-total-row {
+  background-color: rgba(46, 204, 113, 0.08) !important;
+  border-top: 2px solid var(--primary-color) !important;
+}
+
+.nutrition-total-row td {
+  color: #2c3e50;
+}
+
+@media (max-width: 767px) {
+  .nutrition-table {
+    font-size: 0.75rem;
+  }
+  
+  .nutrition-table th,
+  .nutrition-table td {
+    padding: 0.5rem 0.3rem;
+  }
 }
 
 .recipe-link:hover,
@@ -823,9 +843,6 @@ a.button:hover {
   font-style: italic;
 }
 
-/* Add/update these styles in client/src/App.css */
-
-/* Update the search wrapper to use flex */
 .search-wrapper {
   display: flex;
   align-items: stretch;
@@ -842,7 +859,6 @@ a.button:hover {
   box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
 }
 
-/* Add a container for the input and clear button */
 .search-input-container {
   flex-grow: 1;
   position: relative;
@@ -850,10 +866,9 @@ a.button:hover {
   align-items: center;
 }
 
-/* Style the input field */
 .search-input {
   width: 100%;
-  padding: 15px 40px 15px 20px; /* Extra padding on the right for the clear button */
+  padding: 15px 40px 15px 20px;
   border: none;
   font-size: 1rem;
   background-color: transparent;
@@ -867,10 +882,9 @@ a.button:hover {
   font-weight: 300;
 }
 
-/* Position the clear button inside the input container */
 .search-clear-button {
   position: absolute;
-  right: 10px; /* Distance from right edge */
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -883,14 +897,13 @@ a.button:hover {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  z-index: 2; /* Ensure it's above the input */
+  z-index: 2;
 }
 
 .search-clear-button:hover {
   color: #666;
 }
 
-/* Style the search button */
 .search-button {
   background-color: #2ecc71;
   color: white;
@@ -908,7 +921,6 @@ a.button:hover {
   background-color: #27ae60;
 }
 
-/* Responsive adjustments */
 @media (max-width: 576px) {
   .search-title {
     font-size: 1.75rem;
@@ -961,4 +973,15 @@ a.button:hover {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.nutrition-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.nutrition-disclaimer {
+  font-size: 1rem;
+  color: #777;
+  font-style: italic;
 }

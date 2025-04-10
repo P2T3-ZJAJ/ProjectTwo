@@ -113,7 +113,7 @@ const Favorites = () => {
             className="btn btn-primary" 
             onClick={() => navigate("/recipes")}
           >
-            <i className="bi bi-search me-2"></i>
+            <i className="bi bi-search me-2"> </i>
             Browse Recipes
           </button>
         </div>

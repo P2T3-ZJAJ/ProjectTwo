@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { getRecipeById, getNutritionInfo, saveRecipe, removeRecipe, checkIsFavorite } from "../api/recipeAPI";
+import {
+  getRecipeById,
+  getNutritionInfo,
+  saveRecipe,
+  removeRecipe,
+  checkIsFavorite,
+} from "../api/recipeAPI";
 import { Recipe } from "../interfaces/Recipe";
 import { NutritionItem } from "../interfaces/Nutrition";
 import auth from "../utils/auth";
@@ -16,7 +22,6 @@ const RecipeDetail = () => {
   const [error, setError] = useState("");
   const [isBackButtonHovered, setIsBackButtonHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-
 
   // format title function
   const formatTitle = (title: string | null | undefined): string => {
@@ -103,7 +108,7 @@ const RecipeDetail = () => {
   const toggleFavorite = async () => {
     try {
       if (!recipe) return;
-  
+
       setSavingFavorite(true);
       const userInfo = auth.getUserInfo();
       if (!userInfo.id) {
@@ -111,7 +116,7 @@ const RecipeDetail = () => {
         setSavingFavorite(false);
         return;
       }
-  
+
       let result;
       if (isFavorite) {
         // remove from favorites
@@ -128,7 +133,7 @@ const RecipeDetail = () => {
           setIsFavorite(true);
         }
       }
-  
+
       setTimeout(() => setSaveMessage(""), 3000);
       setSavingFavorite(false);
     } catch (err) {
@@ -213,11 +218,13 @@ const RecipeDetail = () => {
             style={{ display: "flex", gap: "12px" }}
           >
             <button
-              className={`btn ${isFavorite ? 'btn-danger' : 'btn-save-favorite'}`}
+              className={`btn ${
+                isFavorite ? "btn-danger" : "btn-save-favorite"
+              }`}
               onClick={toggleFavorite}
               disabled={savingFavorite}
               style={{
-                minWidth: "160px",
+                minWidth: "120px",
                 padding: "8px 16px",
                 borderRadius: "4px",
                 fontWeight: "500",
@@ -229,18 +236,18 @@ const RecipeDetail = () => {
                 cursor: "pointer",
               }}
             >
-            {savingFavorite ? (
-              "Updating..."
-            ) : isFavorite ? (
-              <>
-                <i className="bi bi-heart-fill"></i> Remove Favorite
-              </>
-            ) : (
-              <>
-                <i className="bi bi-heart"></i> Save Recipe
-              </>
-            )}
-          </button>
+              {savingFavorite ? (
+                "Updating..."
+              ) : isFavorite ? (
+                <>
+                  <i className="bi bi-heart-fill"></i> Remove Favorite
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-heart"></i> Save Recipe
+                </>
+              )}
+            </button>
             {recipe.strYoutube && (
               <a
                 href={recipe.strYoutube}
@@ -270,7 +277,7 @@ const RecipeDetail = () => {
               style={{
                 backgroundColor: isBackButtonHovered ? "#2980b9" : "#3498db",
                 color: "white",
-                padding: "12px 24px",
+                padding: "12px 16px",
                 borderRadius: "4px",
                 fontWeight: "500",
                 fontSize: "0.9rem",
@@ -278,7 +285,7 @@ const RecipeDetail = () => {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "6px",
-                minWidth: "150px",
+                minWidth: "120px",
                 border: "none",
                 transition: "all 0.3s ease",
                 cursor: "pointer",
@@ -302,10 +309,10 @@ const RecipeDetail = () => {
         </div>
       </div>
       <div className="row g-lg-5">
-        <div className="col-lg-5 mb-4 mb-lg-0">
-          <div className="recipe-detail-section h-100">
+        <div className="col-lg-5 mb-4 mb-lg-0 d-flex">
+          <div className="recipe-detail-section h-100 w-100">
             {" "}
-            <h3 className="section-title mb-3">Ingredients</h3>
+            <h3 className="section-title mb-3">Ingredients 🛒</h3>
             <ul className="recipe-ingredients-list list-unstyled">
               {Array.from({ length: 20 }).map((_, i) => {
                 const ingredient =
@@ -329,9 +336,9 @@ const RecipeDetail = () => {
           </div>
         </div>
 
-        <div className="col-lg-7">
-          <div className="recipe-detail-section h-100">
-            <h3 className="section-title mb-3">Instructions</h3>
+        <div className="col-lg-7 d-flex">
+          <div className="recipe-detail-section h-100 w-100">
+            <h3 className="section-title mb-3">Instructions 📖</h3>
             <div className="recipe-instructions">
               {recipe.strInstructions
                 ?.split("\n")
@@ -347,49 +354,134 @@ const RecipeDetail = () => {
         <div className="row mt-4 mt-lg-5">
           <div className="col-12">
             <div className="recipe-detail-section">
-              <h3 className="section-title mb-3">Nutrition Information</h3>
-              <p className="text-muted small mb-3">
-                Approximate values based on ingredients listed.
-              </p>
+              <div className="nutrition-header">
+                <h3 className="section-title">Nutrition 📊</h3>
+                <span className="nutrition-disclaimer">
+                  Approximate values based on ingredients listed.
+                </span>
+              </div>
               <div className="table-responsive">
                 <table className="table nutrition-table">
                   <thead>
                     <tr>
                       <th>Ingredient</th>
-                      <th>Nutrition</th>
+                      <th>Calories</th>
+                      <th>Protein</th>
+                      <th>Carbs</th>
+                      <th>Fat</th>
+                      <th>Fiber</th>
+                      <th>Sugars</th>
                     </tr>
                   </thead>
                   <tbody>
                     {nutritionInfo.map((item, index) => (
                       <tr key={index}>
-                        <td>{item.food_name || "Total"}</td>
+                        <td>{item.food_name}</td>
                         <td>
                           {item.nf_calories != null
-                            ? `${item.nf_calories.toFixed(0)} kcal`
-                            : "-"}{" "}
-                          | P:{" "}
+                            ? item.nf_calories.toFixed(0)
+                            : "-"}
+                        </td>
+                        <td>
                           {item.nf_protein != null
-                            ? `${item.nf_protein.toFixed(1)}g`
-                            : "-"}{" "}
-                          | C:{" "}
+                            ? item.nf_protein.toFixed(1) + "g"
+                            : "-"}
+                        </td>
+                        <td>
                           {item.nf_total_carbohydrate != null
-                            ? `${item.nf_total_carbohydrate.toFixed(1)}g`
-                            : "-"}{" "}
-                          | F:{" "}
+                            ? item.nf_total_carbohydrate.toFixed(1) + "g"
+                            : "-"}
+                        </td>
+                        <td>
                           {item.nf_total_fat != null
-                            ? `${item.nf_total_fat.toFixed(1)}g`
-                            : "-"}{" "}
-                          | Fib:{" "}
+                            ? item.nf_total_fat.toFixed(1) + "g"
+                            : "-"}
+                        </td>
+                        <td>
                           {item.nf_dietary_fiber != null
-                            ? `${item.nf_dietary_fiber.toFixed(1)}g`
-                            : "-"}{" "}
-                          | Sug:{" "}
+                            ? item.nf_dietary_fiber.toFixed(1) + "g"
+                            : "-"}
+                        </td>
+                        <td>
                           {item.nf_sugars != null
-                            ? `${item.nf_sugars.toFixed(1)}g`
+                            ? item.nf_sugars.toFixed(1) + "g"
                             : "-"}
                         </td>
                       </tr>
                     ))}
+
+                    {/* Total Row */}
+                    <tr className="nutrition-total-row">
+                      <td>
+                        <strong>Total</strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {nutritionInfo
+                            .reduce(
+                              (sum, item) => sum + (item.nf_calories || 0),
+                              0
+                            )
+                            .toFixed(0)}
+                        </strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {nutritionInfo
+                            .reduce(
+                              (sum, item) => sum + (item.nf_protein || 0),
+                              0
+                            )
+                            .toFixed(1)}
+                          g
+                        </strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {nutritionInfo
+                            .reduce(
+                              (sum, item) =>
+                                sum + (item.nf_total_carbohydrate || 0),
+                              0
+                            )
+                            .toFixed(1)}
+                          g
+                        </strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {nutritionInfo
+                            .reduce(
+                              (sum, item) => sum + (item.nf_total_fat || 0),
+                              0
+                            )
+                            .toFixed(1)}
+                          g
+                        </strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {nutritionInfo
+                            .reduce(
+                              (sum, item) => sum + (item.nf_dietary_fiber || 0),
+                              0
+                            )
+                            .toFixed(1)}
+                          g
+                        </strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {nutritionInfo
+                            .reduce(
+                              (sum, item) => sum + (item.nf_sugars || 0),
+                              0
+                            )
+                            .toFixed(1)}
+                          g
+                        </strong>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
