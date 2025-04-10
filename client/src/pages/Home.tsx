@@ -1,10 +1,4 @@
-// client/src/pages/Home.tsx
-import { Link } from "react-router-dom";
-import auth from "../utils/auth";
-
 const Home = () => {
-  const isLoggedIn = auth.loggedIn();
-
   return (
     <>
       {/* Welcome Section */}
@@ -18,7 +12,7 @@ const Home = () => {
               style={{
                 maxWidth: "250px",
                 margin: "0 auto",
-                display: "block"
+                display: "block",
               }}
             />
           </div>
@@ -52,7 +46,9 @@ const Home = () => {
                   <i className="bi bi-bar-chart"></i>
                 </div>
                 <h3>Nutrition Info</h3>
-                <p>Get detailed nutrition information for every ingredient 📊</p>
+                <p>
+                  Get detailed nutrition information for every ingredient 📊
+                </p>
               </div>
             </div>
             <div className="col-md-4">
