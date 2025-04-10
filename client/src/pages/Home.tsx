@@ -10,6 +10,19 @@ const Home = () => {
       {/* Welcome Section */}
       <section className="welcome text-center">
         <div className="container">
+          <div className="logo-container mb-4">
+            <img
+              src="/assets/images/foodfolio-logo.png"
+              alt="Foodfolio Logo"
+              className="img-fluid"
+              style={{
+                maxWidth: "250px",
+                margin: "0 auto",
+                display: "block"
+              }}
+            />
+          </div>
+
           <h1>Welcome to Foodfolio!</h1>
           <p className="subtitle">
             Discover, save, and share your favorite recipes from around the

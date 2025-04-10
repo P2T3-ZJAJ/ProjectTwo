@@ -12,9 +12,8 @@ const RecipeBrowse = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // load multiple random recipes on initial page load
   useEffect(() => {
-    const loadInitialRecipes = async (count: number = 20) => {
+    const loadInitialRecipes = async (targetCount: number = 20) => {
       try {
         if (!auth.loggedIn()) {
           navigate("/login");
@@ -22,45 +21,75 @@ const RecipeBrowse = () => {
         }
 
         setLoading(true);
-        setError(""); // clear previous errors
+        setError("");
 
-        // array to hold promises for fetching each recipe
-        const recipePromises: Promise<Recipe[]>[] = [];
-        for (let i = 0; i < count; i++) {
-          recipePromises.push(getRandomRecipe());
+        const uniqueRecipeMap = new Map<string, Recipe>();
+        let totalFetchAttempts = 0; // safety counter
+        const maxFetchAttempts = targetCount * 2;
+
+        while (
+          uniqueRecipeMap.size < targetCount &&
+          totalFetchAttempts < maxFetchAttempts
+        ) {
+          const needed = targetCount - uniqueRecipeMap.size;
+          // console.log(`Need ${needed} more recipes. Current unique count: ${uniqueRecipeMap.size}. Fetch attempts: ${totalFetchAttempts}`);
+
+          const recipePromises: Promise<Recipe[]>[] = [];
+          for (let i = 0; i < needed; i++) {
+            if (totalFetchAttempts < maxFetchAttempts) {
+              recipePromises.push(getRandomRecipe());
+              totalFetchAttempts++;
+            } else {
+              // console.warn("Max fetch attempts reached while preparing promises.");
+              break;
+            }
+          }
+          if (recipePromises.length === 0) {
+            break;
+          }
+
+          const results = await Promise.all(recipePromises);
+          const fetchedRecipes = results.flat().filter(Boolean) as Recipe[];
+
+          for (const recipe of fetchedRecipes) {
+            if (
+              recipe?.idMeal &&
+              !uniqueRecipeMap.has(recipe.idMeal) &&
+              uniqueRecipeMap.size < targetCount
+            ) {
+              uniqueRecipeMap.set(recipe.idMeal, recipe);
+            }
+          }
         }
 
-        // wait for all promises to resolve
-        const results = await Promise.all(recipePromises);
+        if (uniqueRecipeMap.size < targetCount) {
+          console.warn(
+            `Could only fetch ${uniqueRecipeMap.size} unique recipes after ${totalFetchAttempts} attempts. Target was ${targetCount}.`
+          );
+        }
 
-        const fetchedRecipes = results.flat().filter(Boolean) as Recipe[];
+        const finalUniqueRecipes = Array.from(uniqueRecipeMap.values());
 
-        // prevent duplicates in case the random API might return the same recipe
-        const uniqueRecipes = Array.from(
-          new Map(
-            fetchedRecipes.map((recipe) => [recipe.idMeal, recipe])
-          ).values()
-        );
-
-        setRecipes(uniqueRecipes);
+        setRecipes(finalUniqueRecipes);
         setLoading(false);
       } catch (err) {
         console.error("Failed to load initial recipes:", err);
         setError("Failed to load recipes. Please try again later.");
+        setRecipes([]); // clear recipes on error
         setLoading(false);
       }
     };
 
-    loadInitialRecipes(); // call the function to load recipes
-  }, [navigate]);
+    loadInitialRecipes(20); // call the function to load 20 unique recipes
+  }, [navigate]); // navigate is the only external dependency needed here
 
   // handle search submission (no changes needed here)
   const handleSearch = async (query: string) => {
     try {
       setLoading(true);
-      setError(""); // Clear previous errors
+      setError(""); // clear previous errors
       const searchResults = await searchRecipes(query);
-      // Handle cases where searchResults might be null or not an array
+      // handle cases where searchResults might be null or not an array
       setRecipes(
         searchResults && Array.isArray(searchResults) ? searchResults : []
       );
@@ -68,7 +97,7 @@ const RecipeBrowse = () => {
     } catch (err) {
       console.error("Failed to search recipes:", err);
       setError("Failed to search recipes. Please try again.");
-      setRecipes([]); // Clear recipes on search error
+      setRecipes([]); // clear recipes on search error
       setLoading(false);
     }
   };

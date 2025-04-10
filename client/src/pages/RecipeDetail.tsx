@@ -14,6 +14,7 @@ const RecipeDetail = () => {
   const [savingFavorite, setSavingFavorite] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [error, setError] = useState("");
+  const [isBackButtonHovered, setIsBackButtonHovered] = useState(false);
 
   // format title function
   const formatTitle = (title: string | null | undefined): string => {
@@ -226,14 +227,23 @@ const RecipeDetail = () => {
           <div className="mt-3 mb-4">
             <button
               onClick={() => navigate(-1)}
-              className="btn btn-outline-secondary"
+              onMouseEnter={() => setIsBackButtonHovered(true)}
+              onMouseLeave={() => setIsBackButtonHovered(false)}
+              className="btn"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "8px 16px",
+                backgroundColor: isBackButtonHovered ? "#2980b9" : "#3498db",
+                color: "white",
+                padding: "12px 24px",
                 borderRadius: "4px",
                 fontWeight: "500",
+                fontSize: "0.9rem",
+                textAlign: "center",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                minWidth: "150px",
+                border: "none",
+                transition: "all 0.3s ease",
                 cursor: "pointer",
               }}
             >
@@ -308,8 +318,8 @@ const RecipeDetail = () => {
                 <table className="table nutrition-table">
                   <thead>
                     <tr>
-                      <th>Nutrient</th>
-                      <th>Amount</th>
+                      <th>Ingredient</th>
+                      <th>Nutrition</th>
                     </tr>
                   </thead>
                   <tbody>
