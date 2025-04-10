@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { getRecipeById, getNutritionInfo, saveRecipe } from "../api/recipeAPI";
+import { getRecipeById, getNutritionInfo, saveRecipe, removeRecipe, checkIsFavorite } from "../api/recipeAPI";
 import { Recipe } from "../interfaces/Recipe";
 import { NutritionItem } from "../interfaces/Nutrition";
 import auth from "../utils/auth";
@@ -15,6 +15,8 @@ const RecipeDetail = () => {
   const [saveMessage, setSaveMessage] = useState("");
   const [error, setError] = useState("");
   const [isBackButtonHovered, setIsBackButtonHovered] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+
 
   // format title function
   const formatTitle = (title: string | null | undefined): string => {
@@ -33,6 +35,7 @@ const RecipeDetail = () => {
       setError("");
       setRecipe(null);
       setNutritionInfo([]);
+      setIsFavorite(false);
 
       try {
         if (!auth.loggedIn()) {
@@ -52,6 +55,12 @@ const RecipeDetail = () => {
           return;
         }
         setRecipe(recipeData);
+
+        const userInfo = auth.getUserInfo();
+        if (userInfo.id) {
+          const favoriteStatus = await checkIsFavorite(userInfo.id, id);
+          setIsFavorite(favoriteStatus);
+        }
 
         // get ingredients list for nutrition API
         const ingredients = getIngredientsList(recipeData);
@@ -91,25 +100,40 @@ const RecipeDetail = () => {
     return ingredients.trim().replace(/,$/, ""); // emove trailing comma and space if exists
   };
 
-  // save recipe to favorites
-  const handleSaveRecipe = async () => {
+  const toggleFavorite = async () => {
     try {
       if (!recipe) return;
-
+  
       setSavingFavorite(true);
-      // need to get the actual user ID from auth or context
-      const userId = 1; // Placeholder - replace with actual user ID
-      const result = await saveRecipe(userId, recipe.idMeal, recipe);
-
-      if (result) {
-        setSaveMessage("Recipe saved to favorites!");
-        setTimeout(() => setSaveMessage(""), 3000);
+      const userInfo = auth.getUserInfo();
+      if (!userInfo.id) {
+        setError("User not found. Please log in again.");
+        setSavingFavorite(false);
+        return;
       }
-
+  
+      let result;
+      if (isFavorite) {
+        // remove from favorites
+        result = await removeRecipe(userInfo.id, recipe.idMeal);
+        if (result) {
+          setSaveMessage("Recipe removed from favorites!");
+          setIsFavorite(false);
+        }
+      } else {
+        // add to favorites
+        result = await saveRecipe(userInfo.id, recipe.idMeal, recipe);
+        if (result) {
+          setSaveMessage("Recipe saved to favorites!");
+          setIsFavorite(true);
+        }
+      }
+  
+      setTimeout(() => setSaveMessage(""), 3000);
       setSavingFavorite(false);
     } catch (err) {
-      console.error("Failed to save recipe:", err);
-      setError("Failed to save recipe. Please try again.");
+      console.error("Failed to update favorites:", err);
+      setError("Failed to update favorites. Please try again.");
       setSavingFavorite(false);
     }
   };
@@ -189,21 +213,34 @@ const RecipeDetail = () => {
             style={{ display: "flex", gap: "12px" }}
           >
             <button
-              className="btn btn-save-favorite"
-              onClick={handleSaveRecipe}
+              className={`btn ${isFavorite ? 'btn-danger' : 'btn-save-favorite'}`}
+              onClick={toggleFavorite}
               disabled={savingFavorite}
               style={{
-                minWidth: "120px",
+                minWidth: "160px",
                 padding: "8px 16px",
                 borderRadius: "4px",
                 fontWeight: "500",
                 textAlign: "center",
-                display: "inline-block",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
                 cursor: "pointer",
               }}
             >
-              {savingFavorite ? "Saving..." : "Save Recipe"}
-            </button>
+            {savingFavorite ? (
+              "Updating..."
+            ) : isFavorite ? (
+              <>
+                <i className="bi bi-heart-fill"></i> Remove Favorite
+              </>
+            ) : (
+              <>
+                <i className="bi bi-heart"></i> Save Recipe
+              </>
+            )}
+          </button>
             {recipe.strYoutube && (
               <a
                 href={recipe.strYoutube}

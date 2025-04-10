@@ -130,3 +130,45 @@ export const getFavorites = async (userId: number) => {
     return [];
   }
 };
+
+// check if a recipe is in favorites
+export const checkIsFavorite = async (userId: number, recipeId: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`/api/recipes/favorite/${userId}/${recipeId}`, {
+      headers: {
+        Authorization: `Bearer ${Auth.getToken()}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to check favorite status');
+    }
+
+    const data = await response.json();
+    return data.isFavorite;
+  } catch (error) {
+    console.error('Error checking favorite status:', error);
+    return false;
+  }
+};
+
+// remove recipe from favorites
+export const removeRecipe = async (userId: number, recipeId: string): Promise<FavoriteResponse | null> => {
+  try {
+    const response = await fetch(`/api/recipes/favorite/${userId}/${recipeId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${Auth.getToken()}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to remove recipe from favorites');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error removing recipe from favorites:', error);
+    return null;
+  }
+};

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRandomRecipe, searchRecipes } from "../api/recipeAPI";
 import { Recipe } from "../interfaces/Recipe";
@@ -9,11 +9,87 @@ import auth from "../utils/auth";
 const RecipeBrowse = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastRecipeElementRef = useRef<HTMLDivElement | null>(null);
+  const recipesMap = useRef(new Map<string, Recipe>());
   const navigate = useNavigate();
 
+  const fetchMoreRecipes = useCallback(
+    async (isInitialLoad = false, currentQuery = searchQuery) => {
+      try {
+        const batchSize = isInitialLoad ? 8 : 4;
+        const maxAttempts = batchSize * 3;
+        let attempts = 0;
+        let newRecipesCount = 0;
+
+        if (currentQuery && currentQuery.trim() !== "") {
+          // Search mode logic
+          if (!isInitialLoad) {
+            setHasMore(false);
+            return;
+          }
+
+          const searchResults = await searchRecipes(currentQuery);
+          if (searchResults && Array.isArray(searchResults)) {
+            const uniqueRecipes = searchResults.filter(
+              (recipe) => !recipesMap.current.has(recipe.idMeal)
+            );
+
+            uniqueRecipes.forEach((recipe) => {
+              recipesMap.current.set(recipe.idMeal, recipe);
+            });
+
+            setRecipes(Array.from(recipesMap.current.values()));
+            setHasMore(false);
+          }
+          return;
+        }
+
+        while (newRecipesCount < batchSize && attempts < maxAttempts) {
+          attempts++;
+          const newRecipesBatch = await getRandomRecipe();
+
+          if (
+            newRecipesBatch &&
+            Array.isArray(newRecipesBatch) &&
+            newRecipesBatch.length > 0
+          ) {
+            const recipe = newRecipesBatch[0];
+
+            if (
+              recipe &&
+              recipe.idMeal &&
+              !recipesMap.current.has(recipe.idMeal)
+            ) {
+              recipesMap.current.set(recipe.idMeal, recipe);
+              newRecipesCount++;
+            }
+          }
+        }
+
+        setRecipes(Array.from(recipesMap.current.values()));
+
+        if (newRecipesCount < batchSize) {
+          console.warn(
+            "Could not find enough new recipes. May be approaching limit."
+          );
+          setHasMore(false);
+        }
+      } catch (error) {
+        console.error("Error fetching more recipes:", error);
+        setError("Error loading more recipes. Please try again.");
+        setHasMore(false);
+      }
+    },
+    [searchQuery]
+  );
+
   useEffect(() => {
-    const loadInitialRecipes = async (targetCount: number = 20) => {
+    const loadInitialRecipes = async () => {
       try {
         if (!auth.loggedIn()) {
           navigate("/login");
@@ -22,94 +98,98 @@ const RecipeBrowse = () => {
 
         setLoading(true);
         setError("");
+        recipesMap.current.clear();
 
-        const uniqueRecipeMap = new Map<string, Recipe>();
-        let totalFetchAttempts = 0; // safety counter
-        const maxFetchAttempts = targetCount * 2;
+        await fetchMoreRecipes(true);
 
-        while (
-          uniqueRecipeMap.size < targetCount &&
-          totalFetchAttempts < maxFetchAttempts
-        ) {
-          const needed = targetCount - uniqueRecipeMap.size;
-          // console.log(`Need ${needed} more recipes. Current unique count: ${uniqueRecipeMap.size}. Fetch attempts: ${totalFetchAttempts}`);
-
-          const recipePromises: Promise<Recipe[]>[] = [];
-          for (let i = 0; i < needed; i++) {
-            if (totalFetchAttempts < maxFetchAttempts) {
-              recipePromises.push(getRandomRecipe());
-              totalFetchAttempts++;
-            } else {
-              // console.warn("Max fetch attempts reached while preparing promises.");
-              break;
-            }
-          }
-          if (recipePromises.length === 0) {
-            break;
-          }
-
-          const results = await Promise.all(recipePromises);
-          const fetchedRecipes = results.flat().filter(Boolean) as Recipe[];
-
-          for (const recipe of fetchedRecipes) {
-            if (
-              recipe?.idMeal &&
-              !uniqueRecipeMap.has(recipe.idMeal) &&
-              uniqueRecipeMap.size < targetCount
-            ) {
-              uniqueRecipeMap.set(recipe.idMeal, recipe);
-            }
-          }
-        }
-
-        if (uniqueRecipeMap.size < targetCount) {
-          console.warn(
-            `Could only fetch ${uniqueRecipeMap.size} unique recipes after ${totalFetchAttempts} attempts. Target was ${targetCount}.`
-          );
-        }
-
-        const finalUniqueRecipes = Array.from(uniqueRecipeMap.values());
-
-        setRecipes(finalUniqueRecipes);
         setLoading(false);
       } catch (err) {
         console.error("Failed to load initial recipes:", err);
         setError("Failed to load recipes. Please try again later.");
-        setRecipes([]); // clear recipes on error
+        setRecipes([]);
         setLoading(false);
+        setHasMore(false);
       }
     };
 
-    loadInitialRecipes(20); // call the function to load 20 unique recipes
-  }, [navigate]); // navigate is the only external dependency needed here
+    loadInitialRecipes();
+  }, [navigate, fetchMoreRecipes]);
 
-  // handle search submission (no changes needed here)
+  const loadMoreRecipes = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    fetchMoreRecipes().finally(() => {
+      setLoadingMore(false);
+    });
+  }, [loadingMore, hasMore, fetchMoreRecipes]);
+
+  useEffect(() => {
+    if (loading || !hasMore) return;
+
+    if (observer.current) {
+      observer.current.disconnect();
+    }
+
+    observer.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore && hasMore) {
+          loadMoreRecipes();
+        }
+      },
+      {
+        rootMargin: "100px",
+      }
+    );
+
+    if (lastRecipeElementRef.current) {
+      observer.current.observe(lastRecipeElementRef.current);
+    }
+
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+    };
+  }, [loading, loadingMore, hasMore, recipes.length, loadMoreRecipes]);
+
   const handleSearch = async (query: string) => {
     try {
       setLoading(true);
-      setError(""); // clear previous errors
-      const searchResults = await searchRecipes(query);
-      // handle cases where searchResults might be null or not an array
-      setRecipes(
-        searchResults && Array.isArray(searchResults) ? searchResults : []
-      );
+      setError("");
+      recipesMap.current.clear();
+
+      setSearchQuery(query);
+
+      if (query.trim() === "") {
+        setHasMore(true);
+        await fetchMoreRecipes(true, "");
+      } else {
+        await fetchMoreRecipes(true, query);
+      }
+
       setLoading(false);
     } catch (err) {
       console.error("Failed to search recipes:", err);
       setError("Failed to search recipes. Please try again.");
-      setRecipes([]); // clear recipes on search error
+      setRecipes([]);
       setLoading(false);
+      setHasMore(false);
     }
   };
 
   return (
     <div className="container mt-4">
-      {" "}
       <div className="row mb-4">
         <div className="col-12">
-          <SearchForm onSearch={handleSearch} />
+          <SearchForm
+            onSearch={handleSearch}
+            initialSearchTerm={searchQuery}
+            onClear={() => handleSearch("")}
+          />
         </div>
       </div>
+
       {loading && (
         <div className="text-center my-5">
           <div
@@ -117,22 +197,24 @@ const RecipeBrowse = () => {
             role="status"
             style={{ width: "3rem", height: "3rem" }}
           >
-            {" "}
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
       )}
+
       {error && (
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
       )}
+
       <div className="row gy-5">
         {!loading && !error && recipes.length > 0
-          ? recipes.map((recipe) => (
+          ? recipes.map((recipe, index) => (
               <div
                 className="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4"
                 key={recipe.idMeal}
+                ref={index === recipes.length - 1 ? lastRecipeElementRef : null}
               >
                 <RecipeCard recipe={recipe} />
               </div>
@@ -146,6 +228,24 @@ const RecipeBrowse = () => {
               </div>
             )}
       </div>
+
+      {loadingMore && (
+        <div className="text-center my-4">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading more...</span>
+          </div>
+        </div>
+      )}
+
+      {!hasMore && recipes.length > 0 && (
+        <div className="text-center my-4">
+          <p className="text-muted">
+            {searchQuery
+              ? "All matching recipes have been loaded."
+              : "You've reached the end of our recipe collection!"}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

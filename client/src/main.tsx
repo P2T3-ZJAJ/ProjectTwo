@@ -8,6 +8,7 @@ import Login from "./pages/Login.tsx";
 import SignUp from "./pages/SignUp.tsx";
 import RecipeDetail from "./pages/RecipeDetail.tsx";
 import RecipeBrowse from "./pages/RecipeBrowse.tsx";
+import Favorites from "./pages/Favorites.tsx";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: "/recipe/:id",
         element: <RecipeDetail />,
+      },
+      {
+        path: "/favorites",
+        element: <Favorites />,
       },
     ],
   },

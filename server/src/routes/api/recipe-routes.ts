@@ -122,4 +122,60 @@ router.get('/favorites/:userId', async (req: Request, res: Response) => {
     }
   });
 
+// remove a recipe from user's favorites
+router.delete('/favorite/:userId/:recipeId', async (req: Request, res: Response) => {
+  try {
+    const { userId, recipeId } = req.params;
+    
+    // find the recipe by mealId
+    const recipe = await Recipe.findOne({ where: { mealId: recipeId } });
+    
+    if (!recipe) {
+      return res.status(404).json({ message: 'Recipe not found' });
+    }
+    
+    // find and remove the user-recipe association
+    const deleted = await UserRecipe.destroy({
+      where: {
+        userId,
+        recipeId: recipe.id
+      }
+    });
+    
+    if (deleted) {
+      return res.json({ message: 'Recipe removed from favorites' });
+    } else {
+      return res.status(404).json({ message: 'Favorite not found' });
+    }
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// endpoint to check if a recipe is in favorites
+router.get('/favorite/:userId/:recipeId', async (req: Request, res: Response) => {
+  try {
+    const { userId, recipeId } = req.params;
+    
+    // find the recipe by mealId
+    const recipe = await Recipe.findOne({ where: { mealId: recipeId } });
+    
+    if (!recipe) {
+      return res.json({ isFavorite: false });
+    }
+    
+    // check if the association exists
+    const favorite = await UserRecipe.findOne({
+      where: {
+        userId,
+        recipeId: recipe.id
+      }
+    });
+    
+    return res.json({ isFavorite: !!favorite });
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 export { router as recipeRouter };

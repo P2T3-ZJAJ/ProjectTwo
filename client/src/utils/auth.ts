@@ -32,6 +32,21 @@ class AuthService {
       return false;
     }
   }
+
+  getUserInfo(): { username: string; id?: number } {
+    const token = this.getToken();
+    if (!token) return { username: '' };
+    
+    try {
+      // decode the token
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      return decoded;
+    } catch (e) {
+      return { username: '' };
+    }
+  }
 }
+
+
 
 export default new AuthService();

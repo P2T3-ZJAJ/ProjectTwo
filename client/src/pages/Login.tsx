@@ -62,11 +62,11 @@ const Login = () => {
   return (
     <div className='form-container'>
       <form className='form login-form' onSubmit={handleSubmit}>
-        <h1>Login</h1>
+        <h1>Login </h1>
         {error && <div className="alert alert-danger">{error}</div>}
         
         <div className="form-group">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="username">Username 👤</label>
           <input 
             id="username"
             className="form-input"
@@ -80,7 +80,7 @@ const Login = () => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">Password 🔒</label>
           <input 
             id="password"
             className="form-input"
@@ -104,7 +104,7 @@ const Login = () => {
         </div>
         
         <div className="mt-3">
-          <p>Don't have an account? <a href="/signup">Sign up</a></p>
+          <p>Don't have an account? <a href="/signup">Sign-Up ✍️</a></p>
         </div>
       </form>
     </div>

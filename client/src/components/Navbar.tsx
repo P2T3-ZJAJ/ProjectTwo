@@ -22,15 +22,22 @@ const Navbar = () => {
         </Link>
 
         <div className="nav-buttons">
-
           {isLoggedIn ? (
-            <button className="button primary" onClick={() => auth.logout()}>
-              <i className="bi bi-box-arrow-right"></i> Logout
-            </button>
-          ) : (
-            <Link to="/login" className="button primary">
-              <i className="bi bi-person"></i> Login
+            <>
+              <Link to="/recipes" className="button outline me-2">
+                <i className="bi bi-search"></i> Browse
               </Link>
+              <Link to="/favorites" className="button outline me-2">
+                <i className="bi bi-heart"></i> Favorites
+              </Link>
+              <button className="button outline me-2" onClick={() => auth.logout()}>
+                <i className="bi bi-box-arrow-right"></i> Logout
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="button outline me-2">
+              <i className="bi bi-person"></i> Login
+            </Link>
           )}
         </div>
       </div>

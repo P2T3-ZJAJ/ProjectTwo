@@ -36,7 +36,7 @@ export const login = async (req: Request, res: Response) => {
     const secretKey = process.env.JWT_SECRET_KEY || '';
 
     // generate a JWT token for the authenticated user
-    const token = jwt.sign({ username }, secretKey, { expiresIn: '1h' });
+    const token = jwt.sign({ username: user.username, id: user.id }, secretKey, { expiresIn: '1h' });
     return res.json({ token });
   } catch (error) {
     console.error("Login error:", error);
@@ -72,8 +72,7 @@ export const register = async (req: Request, res: Response) => {
 
     // generate token using the newly created user data
     const secretKey = process.env.JWT_SECRET_KEY || '';
-    const token = jwt.sign({ username: newUser.username }, secretKey, { expiresIn: '1h' });
-
+    const token = jwt.sign({ username: newUser.username, id: newUser.id }, secretKey, { expiresIn: '1h' });
     return res.status(201).json({
       message: 'User registered successfully',
       token
